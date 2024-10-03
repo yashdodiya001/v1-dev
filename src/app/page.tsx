@@ -160,7 +160,7 @@ export default function Home() {
         { role: "assistant", content: "V1 is thinking....", uniqueId },
       ]);
 
-      const response = await fetch("http://api.v1vue.miraiminds.co/", {
+      const response = await fetch("https://api.v1vue.miraiminds.co/", {
         method: "POST",
         body: JSON.stringify({
           text: input,

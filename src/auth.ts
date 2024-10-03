@@ -37,7 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ user, account, profile }) {
       try {
         const response = await fetch(
-          "http://api.v1vue.miraiminds.co/v1/register",
+          "https://api.v1vue.miraiminds.co/v1/register",
           {
             method: "POST",
             headers: {
