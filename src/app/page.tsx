@@ -348,14 +348,6 @@ export default function Home() {
     <div className="flex h-screen bg-background">
       <main className="flex-1 flex flex-col items-center overflow-hidden">
         <header className="bg-background border-b flex items-center w-full">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <Menu />
-          </Button>
           <Header />
         </header>
 

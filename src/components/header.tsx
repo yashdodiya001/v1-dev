@@ -20,19 +20,6 @@ const Header = () => {
       <div className="w-full bg-white flex justify-between items-center p-4">
         <h1 className="text-xl font-bold ml-4">v1.dev</h1>
         <div className="flex space-x-2 items-center">
-          {status === "authenticated" && (
-            <Button onClick={toggleBugReport} variant="secondary">
-              Bug Report / Feature Request
-            </Button>
-          )}
-          {status === "authenticated" && (
-            <Button
-              onClick={() => window.open("https://dub.sh/windai-discord")}
-              className="bg-[#6570fd]"
-            >
-              Discord
-            </Button>
-          )}
           {status === "unauthenticated" && (
             <Button onClick={toggleAuth} variant="default">
               Sign In
