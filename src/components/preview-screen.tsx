@@ -1,14 +1,20 @@
-import * as UI from '@/components/ui';
-import JsxParser from 'react-jsx-parser'
-import React, { ComponentType, ExoticComponent, useEffect, useRef, useState } from 'react';
-import useTheme from '@/hooks/useTheme';
-import { createRoot } from 'react-dom/client';
-import { themes } from '../lib/themes';
-import { generateCSSConfig, getCss } from '@/lib/globalCss';
-import * as NextComponents from '@/lib/nextui-components';
-import { NextUIProvider } from '@nextui-org/system';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import * as UI from "@/components/ui";
+import JsxParser from "react-jsx-parser";
+import React, {
+  ComponentType,
+  ExoticComponent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import useTheme from "@/hooks/useTheme";
+import { createRoot } from "react-dom/client";
+import { themes } from "../lib/themes";
+import { generateCSSConfig, getCss } from "@/lib/globalCss";
+import * as NextComponents from "@/lib/nextui-components";
+import { NextUIProvider } from "@nextui-org/system";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -19,10 +25,13 @@ interface ErrorBoundaryProps {
   router: any;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: any) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
     };
   }
@@ -33,45 +42,70 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   componentDidCatch(error: any, errorInfo: any) {
     console.error("Caught an error:", error, errorInfo);
-    toast.error("Error occurred while parsing content. Try using different model")
-    toast.warning("Error occurred while parsing content. Try using different model", {
-      action: {
-        label: 'Change llm',
-        onClick: () => this.props.router.push('/settings/llm')
-      },
-    })
+    toast.error(
+      "Error occurred while parsing content. Try using different model"
+    );
+    toast.warning(
+      "Error occurred while parsing content. Try using different model",
+      {
+        action: {
+          label: "Change llm",
+          onClick: () => this.props.router.push("/settings/llm"),
+        },
+      }
+    );
   }
 
   render() {
     if (this.state.hasError) {
-      return <div className="bg-black text-white p-4">Error occurred while parsing content. Try using different model </div>;
+      return (
+        <div className="bg-black text-white p-4">
+          Error occurred while parsing content. Try using different model{" "}
+        </div>
+      );
     }
 
     return this.props.children;
   }
 }
 
+type JsxParserComponents = Record<
+  string,
+  ComponentType<any> | ExoticComponent<any>
+>;
 
-type JsxParserComponents = Record<string, ComponentType<any> | ExoticComponent<any>>;
-
-function castComponents(components: typeof UI | typeof NextComponents): JsxParserComponents {
+function castComponents(
+  components: typeof UI | typeof NextComponents
+): JsxParserComponents {
   return components as unknown as JsxParserComponents;
 }
 
-const ParsedContent = ({ html_code, theme, uiType }: { html_code: string, theme: string, uiType: string }) => {
+const ParsedContent = ({
+  html_code,
+  theme,
+  uiType,
+}: {
+  html_code: string;
+  theme: string;
+  uiType: string;
+}) => {
   const [parsedJsx, setParsedJsx] = useState<React.ReactNode>(null);
-  const [renderError, setRenderError] = useState<Error | null>(null)
+  const [renderError, setRenderError] = useState<Error | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     try {
       setParsedJsx(
         <JsxParser
-          components={uiType === "shadcn-react" ? castComponents(UI) : castComponents(NextComponents)}
+          components={
+            uiType === "shadcn-react"
+              ? castComponents(UI)
+              : castComponents(NextComponents)
+          }
           jsx={html_code}
           onError={(e) => {
-            console.error("Error in JsxParser:", e)            
-            setRenderError(e)
+            console.error("Error in JsxParser:", e);
+            setRenderError(e);
           }}
         />
       );
@@ -81,23 +115,31 @@ const ParsedContent = ({ html_code, theme, uiType }: { html_code: string, theme:
     return () => {
       setParsedJsx(null);
       setRenderError(null);
-    }
+    };
   }, [html_code, uiType]);
 
   return (
     <div className={`${theme} relative`}>
       <ErrorBoundary router={router}>
-        {
-          renderError ? (
-            <div className="bg-black text-white p-4">Error occurred while rendering content. Try using different model </div>
-          ) : parsedJsx
-        }
+        {renderError ? (
+          <div className="bg-black text-white p-4">
+            Error occurred while rendering content. Try using different model{" "}
+          </div>
+        ) : (
+          parsedJsx
+        )}
       </ErrorBoundary>
     </div>
   );
 };
 
-const PreviewScreen = ({ html_code, uiType }: { html_code: string, uiType: string }) => {
+const PreviewScreen = ({
+  html_code,
+  uiType,
+}: {
+  html_code: string;
+  uiType: string;
+}) => {
   const { theme } = useTheme();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isInitializedRef = useRef(false);
