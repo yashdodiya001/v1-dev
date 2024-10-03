@@ -34,38 +34,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     // signIn method to store details in a database
-    async signIn({ user, account, profile }) {
-      try {
-        const response = await fetch("http://127.0.0.1:5000/v1/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            githubId: user.id,
-            name: user.name,
-            email: user.email,
-            imageUrl: user.imageUrl,
-            username: user.username,
-          }),
-        });
+    // async signIn({ user, account, profile }) {
+    //   try {
+    //     const response = await fetch("http://127.0.0.1:5000/v1/register", {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //       },
+    //       body: JSON.stringify({
+    //         githubId: user.id,
+    //         name: user.name,
+    //         email: user.email,
+    //         imageUrl: user.imageUrl,
+    //         username: user.username,
+    //       }),
+    //     });
 
-        if (!response.ok) {
-          console.error("Failed to send user data to backend");
-          return false;
-        }
+    //     if (!response.ok) {
+    //       console.error("Failed to send user data to backend");
+    //       return false;
+    //     }
 
-        const data = await response.json();
-        if (data.data.mongoId) {
-          user.id = data.data.mongoId; // Update the user.id with MongoDB _id
-        }
+    //     const data = await response.json();
+    //     if (data.data.mongoId) {
+    //       user.id = data.data.mongoId; // Update the user.id with MongoDB _id
+    //     }
 
-        return true;
-      } catch (error) {
-        console.error("Error sending user data to backend:", error);
-        return false;
-      }
-    },
+    //     return true;
+    //   } catch (error) {
+    //     console.error("Error sending user data to backend:", error);
+    //     return false;
+    //   }
+    // },
   },
 });
 
