@@ -4,7 +4,6 @@ const nextConfig = {
   images: {
     domains: ["avatars.githubusercontent.com", "picsum.photos"],
   },
-  reactStrictMode: true,
 };
 
 export default nextConfig;
