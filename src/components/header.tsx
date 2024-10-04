@@ -17,8 +17,8 @@ const Header = () => {
 
   return (
     <>
-      <div className="w-full bg-white flex justify-between items-center p-4">
-        <h1 className="text-xl font-bold ml-4">v1.dev</h1>
+      <div className="w-full bg-[#09090b] text-white flex justify-between items-center p-4">
+        <h1 className="text-xl font-bold ml-4 font-serif">v1.dev</h1>
         <div className="flex space-x-2 items-center">
           {status === "unauthenticated" && (
             <Button onClick={toggleAuth} variant="default">

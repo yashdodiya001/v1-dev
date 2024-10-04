@@ -4,7 +4,7 @@ import loaderAnimation from "../app/animations/loader.json"; // Path to your loa
 
 const Loader = () => {
   return (
-    <div className="flex justify-start items-center">
+    <div>
       <Player
         autoplay
         loop

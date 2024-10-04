@@ -29,7 +29,6 @@ import {
   Cog,
   Copy,
   Download,
-  Image,
   InfoIcon,
   LoaderCircle,
   Lock,
@@ -48,13 +47,23 @@ import { Separator } from "@/components/ui/separator";
 import { MessageSquare, Send, Menu } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
+  atomDark,
+  coldarkCold,
+  coldarkDark,
+  duotoneDark,
   oneDark,
   vscDarkPlus,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useToast } from "@/components/ui/use-toast";
-import { dark, docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import {
+  dark,
+  docco,
+  dracula,
+  hybrid,
+} from "react-syntax-highlighter/dist/esm/styles/hljs";
 import Loader from "@/components/loader";
 import MainLoader from "@/components/main-loader";
+import Image from "next/image";
 
 interface CodeObject {
   fileName: string;
@@ -319,7 +328,7 @@ export default function Home() {
   const processContent = (content: string) => {
     return content.split("\n").map((line, i) => {
       const formattedLine = line.replace(/`([^`]+)`/g, (match, code) => {
-        return `<code class="bg-gray-200 text-stone-800 px-1 rounded">${code}</code>`;
+        return `<code class="bg-[#1F1F22] text-sm text-white p-1 rounded">${code}</code>`;
       });
       if (
         line.trim().startsWith("•") ||
@@ -345,14 +354,18 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-[#09090b]">
       <main className="flex-1 flex flex-col items-center overflow-hidden">
-        <header className="bg-background border-b flex items-center w-full">
+        <header className="bg-background flex items-center w-full">
           <Header />
         </header>
 
         {/* Chat messages */}
-        <ScrollArea className="flex-1 p-4 bg-stone-100 w-[90%] rounded-md mt-2 border-2">
+        <ScrollArea
+          className={`flex-1 p-4 bg-[#09090b] text-white ${
+            codeSidebarOpen ? "w-[100%]" : "w-[60%]"
+          } rounded-md mt-2`}
+        >
           <div className="space-y-4">
             {messages.map((message, index) => {
               const splitContent = message.content.includes(message.uniqueId)
@@ -363,19 +376,32 @@ export default function Home() {
                 <div
                   key={index}
                   ref={index === messages.length - 1 ? lastMessageRef : null}
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                  className={`flex justify-start`}
                 >
                   <div
-                    className={`rounded-lg whitespace-pre-wrap max-w-[80%] break-words ${
+                    className={`flex items-start justify-start gap-2 rounded-lg whitespace-pre-wrap max-w-[80%] break-words ${
                       message.content === "V1 is thinking...."
                         ? ""
                         : message.role === "user"
-                        ? "bg-primary text-primary-foreground px-3 py-1"
+                        ? "text-primary-foreground p-1"
                         : "p-2"
                     }`}
                   >
+                    <div className={`mt-1`}>
+                      {message.role === "user" ? (
+                        <Image
+                          src={session?.user?.imageUrl || ""}
+                          width={200}
+                          height={200}
+                          alt="user image"
+                          className="w-6 h-6 rounded-full"
+                        />
+                      ) : (
+                        <div className="font-bold font-serif text-slate-100">
+                          v1
+                        </div>
+                      )}
+                    </div>
                     <div className="font-sans text-base leading-loose">
                       {splitContent ? (
                         splitContent.map((contentPart, i) => (
@@ -391,7 +417,7 @@ export default function Home() {
                                   return (
                                     <button
                                       key={codeObj.uniqueId}
-                                      className="flex items-center p-2 my-4 border-2 border-stone-500 bg-stone-200 text-stone-800 rounded-md hover:bg-stone-500 hover:text-stone-100 transition-colors duration-200"
+                                      className="flex items-center p-2 my-4 border-2 shadow-2xl border-stone-300 bg-[#09090b] text-white rounded-md"
                                       onClick={() => {
                                         setCodeSidebarOpen(true);
                                         setSelectedCodeIndex(codeObj.codeId);
@@ -424,7 +450,10 @@ export default function Home() {
         </ScrollArea>
 
         {/* Input area */}
-        <form onSubmit={handleSubmit} className="p-4 w-[90%]">
+        <form
+          onSubmit={handleSubmit}
+          className={`p-4 ${codeSidebarOpen ? "w-[100%]" : "w-[60%]"}`}
+        >
           <div className="flex items-center space-x-2">
             <Input
               type="text"
@@ -432,13 +461,13 @@ export default function Home() {
               value={input}
               autoFocus={true}
               onChange={(e) => setInput(e.target.value)}
-              className="flex-1"
+              className="flex-1 text-white"
             />
             <Button
               type="submit"
               variant="ghost"
               size="icon"
-              className="ml-2"
+              className="ml-2 text-white"
               disabled={loading}
             >
               {loading ? (
@@ -452,12 +481,12 @@ export default function Home() {
       </main>
       {codeSidebarOpen && (
         <aside
-          className={`w-1/2 bg-gray-800 text-white p-4 overflow-auto transition-all duration-300 ${
+          className={`w-1/2 bg-[#09090b] border-l border-gray-400 text-white px-2 pt-1 overflow-auto transition-all duration-300 ${
             codeSidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
           {codeContent ? (
-            <ScrollArea className="h-[calc(100vh-4rem)] w-full rounded-md bg-[#282C34]">
+            <ScrollArea className="h-[calc(100vh-1rem)] w-full rounded-md bg-[#111B27]">
               <div className="flex space-x-2 justify-start items-center pt-2">
                 <div className="flex items-center space-x-2 px-3 py-2 border-r border-gray-700">
                   <Cog size={18} />
@@ -483,7 +512,7 @@ export default function Home() {
               </div>
               <SyntaxHighlighter
                 language="javascript"
-                style={oneDark}
+                style={coldarkDark}
                 customStyle={{
                   fontSize: "16px",
                   borderRadius: "8px",

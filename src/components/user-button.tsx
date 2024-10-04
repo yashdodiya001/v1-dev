@@ -40,13 +40,18 @@ export default function UserButton({ user }: UserButtonProps) {
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-48 mr-2">
-        <DropdownMenuLabel>@{user.username}</DropdownMenuLabel>
+      <DropdownMenuContent className="w-48 mr-2 bg-[#09090b] mt-2 bottom-3 border-gray-400">
+        <DropdownMenuLabel className="text-[#D8D8D9]">
+          @{user.username}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Sign out</span>
+        <DropdownMenuGroup className="bg-[#09090b]">
+          <DropdownMenuItem
+            onClick={handleSignOut}
+            className="hover:cursor-pointer hover:bg-[#3f3f42] focus:bg-[#3f3f42]"
+          >
+            <LogOut className="mr-2 h-4 w-4 text-[#D8D8D9]" />
+            <span className="text-[#D8D8D9]">Sign out</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
