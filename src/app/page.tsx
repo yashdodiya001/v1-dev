@@ -64,6 +64,7 @@ import {
 import Loader from "@/components/loader";
 import MainLoader from "@/components/main-loader";
 import Image from "next/image";
+import MyPage from "@/components/vue-preview";
 
 interface CodeObject {
   fileName: string;
@@ -101,50 +102,10 @@ export default function Home() {
       uniqueId: "first_chat",
     },
   ]);
+  const [selectedTab, setSelectedTab] = useState<string>("code");
   const [fileName, setFileName] = useState<string[] | null>([]);
   const [selectedCodeIndex, setSelectedCodeIndex] = useState<string>("");
   const lastMessageRef = useRef<HTMLDivElement>(null);
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-    const file = files[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageBase64(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setSelectedImage(null);
-    setImageBase64("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const generateUI = async () => {
-    if (!input) {
-      toast.error("Please enter a message");
-      return;
-    }
-    try {
-      if (status === "authenticated" && userId) {
-        setLoading(true);
-        const ui = await createUI(input, userId, uiType);
-        setLoading(false);
-        router.push(`/ui/${ui.id}`);
-      } else {
-        toggle();
-      }
-    } catch (error) {
-      toast.error("Failed to generate UI");
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -349,6 +310,42 @@ export default function Home() {
     });
   };
 
+  const fileOpenButton = (codeObj: CodeObject) => {
+    setCodeSidebarOpen(true);
+    setSelectedCodeIndex(codeObj.codeId);
+    const templateMatch = codeObj.code.match(/<template[\s\S]*<\/template>/);
+    const templateCode = templateMatch ? templateMatch[0] : "";
+    const errorCardTemplate = `
+    <template>
+      <div class="flex items-center justify-center min-h-screen bg-gray-100">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg max-w-md text-center">
+          <h2 class="text-xl font-semibold mb-2">Error</h2>
+          <p class="text-sm mb-4">No Preview Available</p>
+        </div>
+      </div>
+    </template>
+  `;
+    const codeToSend = templateCode || errorCardTemplate;
+    fetch("/api/update-file", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: codeToSend,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.message) {
+          console.log("File updated successfully");
+        } else {
+          console.error("Error updating the file");
+        }
+      })
+      .catch((error) => console.error("Error:", error));
+  };
+
   if (status === "loading") {
     return <MainLoader />;
   }
@@ -413,15 +410,14 @@ export default function Home() {
                                   codeObj.uniqueId === message.uniqueId
                               )
                               ?.map((codeObj) => {
+                                const codeLines =
+                                  codeObj.code?.split("/n").length;
                                 if (codeObj.order === i + 1) {
                                   return (
                                     <button
                                       key={codeObj.uniqueId}
                                       className="flex items-center p-2 my-4 border-2 shadow-2xl border-stone-300 bg-[#09090b] text-white rounded-md"
-                                      onClick={() => {
-                                        setCodeSidebarOpen(true);
-                                        setSelectedCodeIndex(codeObj.codeId);
-                                      }}
+                                      onClick={() => fileOpenButton(codeObj)}
                                     >
                                       <div className="flex items-center space-x-2 px-3 py-2">
                                         <Cog size={18} />
@@ -486,47 +482,86 @@ export default function Home() {
           }`}
         >
           {codeContent ? (
-            <ScrollArea className="h-[calc(100vh-1rem)] w-full rounded-md bg-[#111B27]">
-              <div className="flex space-x-2 justify-start items-center pt-2">
-                <div className="flex items-center space-x-2 px-3 py-2 border-r border-gray-700">
-                  <Cog size={18} />
-                  <span className="text-sm">
+            <>
+              {/* Tab Navigation */}
+              <div className="flex space-x-2 px-3 py-1">
+                <button
+                  className={`${
+                    selectedTab === "preview" ? "text-white" : "text-gray-500"
+                  } text-sm px-4 py-2`}
+                  onClick={() => setSelectedTab("preview")}
+                >
+                  Preview
+                </button>
+                <button
+                  className={`${
+                    selectedTab === "code" ? "text-white" : "text-gray-500"
+                  } text-sm px-4 py-2`}
+                  onClick={() => setSelectedTab("code")}
+                >
+                  Code
+                </button>
+              </div>
+
+              {/* Tab Panels */}
+              {selectedTab === "preview" && (
+                <div className="h-[calc(100vh-4rem)] w-full rounded-md bg-[#111B27]">
+                  {/* Add your preview content here */}
+                  <div className="text-white">
+                    {/* @ts-ignore */}
+                    <MyPage />
+                  </div>
+                </div>
+              )}
+
+              {selectedTab === "code" && (
+                <ScrollArea className="h-[calc(100vh-1rem)] w-full rounded-md bg-[#111B27]">
+                  <div className="flex space-x-2 justify-start items-center pt-2">
+                    <div className="flex items-center space-x-2 px-3 py-2 border-r border-gray-700">
+                      <Cog size={18} />
+                      <span className="text-sm">
+                        {codeContent.find(
+                          (codeObj) => codeObj.codeId === selectedCodeIndex
+                        )?.fileName ?? "code.txt"}
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={downloadFile}>
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={copyToClipboard}
+                    >
+                      <Clipboard className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setCodeSidebarOpen(false)}
+                    >
+                      <X size={18} />
+                    </Button>
+                  </div>
+                  <SyntaxHighlighter
+                    language="javascript"
+                    style={coldarkDark}
+                    customStyle={{
+                      fontSize: "16px",
+                      borderRadius: "8px",
+                      padding: "0px 16px 16px 16px",
+                      maxHeight: "100%",
+                      overflow: "visible",
+                    }}
+                  >
                     {codeContent.find(
                       (codeObj) => codeObj.codeId === selectedCodeIndex
-                    )?.fileName ?? "code.txt"}
-                  </span>
-                </div>
-                <Button variant="ghost" size="icon" onClick={downloadFile}>
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={copyToClipboard}>
-                  <Clipboard className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setCodeSidebarOpen(false)}
-                >
-                  <X size={18} />
-                </Button>
-              </div>
-              <SyntaxHighlighter
-                language="javascript"
-                style={coldarkDark}
-                customStyle={{
-                  fontSize: "16px",
-                  borderRadius: "8px",
-                  padding: "0px 16px 16px 16px",
-                  maxHeight: "100%",
-                  overflow: "visible",
-                }}
-              >
-                {codeContent.find(
-                  (codeObj) => codeObj.codeId === selectedCodeIndex
-                )?.code || ""}
-              </SyntaxHighlighter>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+                    )?.code || ""}
+                  </SyntaxHighlighter>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              )}
+            </>
           ) : (
             <div>No code snippet available</div>
           )}
